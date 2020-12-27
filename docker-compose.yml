@@ -1,0 +1,37 @@
+version: '2.2'
+services:
+
+  elasticsearch:
+    image: elasticsearch:7.10.1
+    container_name: elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  spring-data-elasticsearch-demo:
+    image: 'spring-data-elasticsearch-demo:0.0.1-SNAPSHOT'
+    build:
+      context: .
+    container_name: spring-data-elasticsearch-demo
+    ports:
+      - "8080:8080"
+    depends_on:
+      - elasticsearch
+    environment:
+      - APP.ELASTICSEARCH.URL=elasticsearch:9200
+
+volumes:
+  esdata1:
+    driver: local
